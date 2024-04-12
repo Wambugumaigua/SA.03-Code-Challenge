@@ -1,0 +1,115 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: #f8f5f5;
+}
+body{
+    width: 100%;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    background-color: #321f44;
+}
+.app{
+    height: auto;
+    width: 400px;
+    display: grid;
+    grid-gap: 0.5em;
+    padding: 0em 0.3em;
+}
+.inputsDiv,
+form{
+    display: grid;
+    grid-gap: 0.3em;
+}
+
+form{
+    grid-gap: 0.9em;
+}
+button{
+    width: auto;
+    margin: 0 auto;
+    padding: 0.5em 1em;
+    border: 1px solid #ccc;
+    border-radius: 0.3em;
+    cursor: pointer;
+    white-space: nowrap;
+    color: #000;
+    border-radius: 20px;
+    padding: 0.7em 1em;
+    font-weight: 800;
+    transition: all 0.3s ease-in-out; 
+}
+button:active,
+button:hover{
+    background-color: #00fabb;
+    transform: translateY(-3px);
+}
+input{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(0,0,0,0.2);
+    outline: none;
+    font-size: 15px;
+    padding: 0.7em;
+    border-radius: 0.4em;
+    color: #000;
+    transition: all 0.3s ease-in-out; 
+}
+input:hover{
+    border: 1px solid rgba(0,0,0,0.5);
+    background-color: #dfdce2;
+}
+input::placeholder{
+    color: #423e3e;
+}
+.btn{
+    display: flex;
+    justify-content: center;
+    gap: 0.3em;
+}
+.tododiv{
+    margin-top: 2em;
+    width: 100%;
+    padding: 0.5em 2em;
+    height: 250px;
+    border: 1px solid grey;
+    border-radius: 7px;
+    overflow: auto;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-gap: 0.5em;
+}
+.tododiv span{
+    top: 0;
+    position: sticky;
+    font-size: 25px; 
+    font-weight: 700;
+    margin: 0 auto;
+    width: auto;
+    padding: 0.1em 0.6em;
+    height: auto;
+    text-align: center;
+    border-bottom: 2px solid grey;
+}
+::-webkit-scrollbar{
+width: 5px;
+height: 7px;
+}
+::-webkit-scrollbar-thumb{
+background: linear-gradient( #ff5e0075, #ff5e00);
+border-radius: 10px;
+height: 60%;
+
+}
+::-webkit-scrollbar-thumb:hover{
+background: linear-gradient( transparent, #00c6ff);
+height: 60%;
+}
+
+@media screen and (max-width: 400px) {
+
+    .app{
+        width: 100%;
+    }
