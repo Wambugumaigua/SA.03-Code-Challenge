@@ -2,7 +2,7 @@
 
 #### Date, 2024/04/7
 
-#### By *Alex Wambugu Maigua*
+#### By Alex Wambugu Maigua
 
 ## Description
 It's a webpage based on showing my understanding on the three pillarsd of javascript.

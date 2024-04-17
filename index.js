@@ -1,120 +1,142 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const baseURL = 'http://localhost:3000';
+document.addEventListener('DOMContentLoaded', function () {
+    let baseURL = "http://localhost:3000/films/";
+    let ulFilms = document.getElementById("films");
+    let idBuyticket = document.getElementById("buy-ticket");
+    let movieImg = document.getElementById("poster");
+    let idTitle = document.getElementById("title");
+    let idRuntime = document.getElementById("runtime");
+    let idFilmInfo = document.getElementById("film-info");
+    let idShowtime = document.getElementById("showtime");
+    let idTicketnum = document.getElementById("ticket-num");
 
-    const fetchFilms = async () => {
-        try {
-            const response = await fetch(${baseURL}/films);
-            if (!response.ok) {
-                throw new Error('Failed to fetch films');
-            }
-            const films = await response.json();
+    function renderMovie() {
+        fetch(baseURL)
+            .then(res => res.json())
+            .then(data => {
+                ulFilms.innerHTML = "";
+                data.forEach(logMovie);
+            })
+            .catch(error => console.error('Error fetching movies:', error));
+    }
+    
+    renderMovie();
 
-            const filmsList = document.getElementById('films');
-            filmsList.innerHTML = '';
-
-            films.forEach(film => {
-                const li = createFilmListItem(film);
-                filmsList.appendChild(li);
-            });
-
-            if (films.length > 0) {
-                displayMovieDetails(films[0]);
-            }
-        } catch (error) {
-            console.error('Error fetching films:', error);
+    function logMovie(movie) {
+        let remainingTickets = movie.capacity - movie.tickets_sold;
+        let liFilm = document.createElement("li");
+        let movieSpan = document.createElement("span");
+        movieSpan.innerText = movie.title;
+        liFilm.appendChild(movieSpan);
+    
+        let deleteButton = document.createElement("button");
+        deleteButton.innerText = "Delete";
+        liFilm.appendChild(deleteButton);
+    
+        deleteButton.addEventListener('click', () => deleteMovie(movie));
+    
+        movieSpan.addEventListener('click', () => updateDom(movie));
+    
+        ulFilms.appendChild(liFilm);
+    
+        if (movie.id === "1") {
+            updateDom(movie);
         }
-    };
+    }
 
-    const createFilmListItem = (film) => {
-        const li = document.createElement('li');
-        li.textContent = film.title;
-        li.classList.add('film', 'item');
+    function updateDom(movie) {
+        let remainingTickets = movie.capacity - movie.tickets_sold;
+        idBuyticket.dataset.movieId = movie.id;
 
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
-        deleteButton.classList.add('delete-btn');
-        deleteButton.onclick = async (event) => {
-            event.stopPropagation();
-            try {
-                const deleteResponse = await fetch(${baseURL}/films/${film.id}, {
-                    method: 'DELETE'
-                });
-                if (!deleteResponse.ok) {
-                    throw new Error('Failed to delete film');
-                }
-                filmsList.removeChild(li); 
-            } catch (error) {
-                console.error('Error deleting film:', error);
+        let ticketAvailability = remainingTickets > 0 ? "Buy Ticket" : "Sold out";
+
+        movieImg.src = movie.poster;
+        movieImg.alt = movie.title;
+        idTitle.innerText = movie.title;
+        idRuntime.innerText = movie.runtime + " minutes";
+        idFilmInfo.innerText = movie.description;
+        idShowtime.innerText = movie.showtime;
+        idTicketnum.innerText = remainingTickets;
+
+        idBuyticket.onclick = () => {
+            if (remainingTickets > 0) {
+                buyTicket(movie);
+            } else {
+                console.log("The tickets are sold out!!");
             }
         };
 
-        li.appendChild(deleteButton);
+        let button = document.querySelector('[data-movie-id="' + movie.id + '"]');
+        button.innerText = ticketAvailability;
+    }
 
-        if (film.capacity - film.tickets_sold === 0) {
-            li.classList.add('sold-out');
-        }
-
-        li.addEventListener('click', () => {
-            displayMovieDetails(film);
-        });
-
-        return li;
-    };
-
-    const displayMovieDetails = (film) => {
-        const movieDetails = document.getElementById('movieDetails');
-        movieDetails.innerHTML = `
-            <img src="${film.poster}" alt="${film.title}" style="max-width: 100%;">
-            <p><strong>Title:</strong> ${film.title}</p>
-            <p><strong>Runtime:</strong> ${film.runtime} mins</p>
-            <p><strong>Showtime:</strong> ${film.showtime}</p>
-            <p><strong>Available Tickets:</strong> ${film.capacity - film.tickets_sold}</p>
-            <p>${film.description}</p>
-        `;
-
-        const buyTicketBtn = document.getElementById('buyTicketBtn');
-        buyTicketBtn.disabled = film.capacity - film.tickets_sold === 0;
-
-        if (film.capacity - film.tickets_sold === 0) {
-            buyTicketBtn.textContent = 'Sold Out';
-        } else {
-            buyTicketBtn.textContent = 'Buy Ticket';
-        }
-
-        buyTicketBtn.onclick = async () => {
-            if (film.capacity - film.tickets_sold > 0) {
-                try {
-                    const updatedTicketsSold = film.tickets_sold + 1;
-                    const patchResponse = await fetch(${baseURL}/films/${film.id}, {
-                        method: 'PATCH',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ tickets_sold: updatedTicketsSold })
-                    });
-
-                    if (!patchResponse.ok) {
-                        throw new Error('Failed to buy ticket');
-                    }
-
-                    await fetch(${baseURL}/tickets, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            film_id: film.id,
-                            number_of_tickets: 1
-                        })
-                    });
-
-                    displayMovieDetails({ ...film, tickets_sold: updatedTicketsSold });
-                } catch (error) {
-                    console.error('Error buying ticket:', error);
-                }
-            }
+    function buyTicket(movie) {
+        movie.tickets_sold++;
+        let requestHeaders = {
+            "Content-Type": "application/json"
         };
-    };
+        let requestBody = {
+            "tickets_sold": movie.tickets_sold
+        };
+        fetch(baseURL + movie.id, {
+            method: "PATCH",
+            headers: requestHeaders,
+            body: JSON.stringify(requestBody)
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Failed to update tickets_sold');
+            }
+            return res.json();
+        })
+        .then(data => {
+            updateDom(data);
+            let numberOfTickets = data.capacity - data.tickets_sold;
 
-    fetchFilms();
+            if (numberOfTickets <= 0) {
+                renderMovie();
+            }
+
+            let requestBodyTickets = {
+                "film_id": data.id,
+                "number_of_tickets": numberOfTickets
+            };
+
+            fetch("http://localhost:3000/tickets", {
+                method: "POST",
+                headers: requestHeaders,
+                body: JSON.stringify(requestBodyTickets)
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Failed to create ticket');
+                }
+                return res.json();
+            })
+            .then(data => console.log(data))
+            .catch(error => console.error('Error buying ticket:', error));
+        })
+        .catch(error => console.error('Error buying ticket:', error));
+    }
+
+    function deleteMovie(movie) {
+        let requestHeaders = {
+            "Content-Type": "application/json"
+        };
+        let requestBody = {
+            "id": movie.id
+        };
+        fetch(baseURL + movie.id, {
+            method: "DELETE",
+            headers: requestHeaders,
+            body: JSON.stringify(requestBody)
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Failed to delete movie');
+            }
+            return res.json();
+        })
+        .then(renderMovie)
+        .catch(error => console.error('Error deleting movie:', error));
+    }
 });
